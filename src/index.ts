@@ -24,6 +24,7 @@ const CONNECTION_RETRY_DEBOUNCE = parseInt(
 
 async function newClient() {
   return new Promise((resolve) => {
+    let pingInterval: NodeJS.Timeout | undefined;
     const client = new WebSocket(process.env.WEBSOCKET_SERVER_URL!);
 
     let opened = false;
@@ -40,12 +41,21 @@ async function newClient() {
       client.send(JSON.stringify({ action: "sendmessage", data: "test" }));
 
       resolve(true);
+
+      pingInterval = setInterval(() => {
+        if (!opened) return clearInterval(pingInterval);
+        
+        logger.info("Sending ping");
+        client.ping();
+      }, 9 * 60 * 1000);
     });
 
     client.on("close", async function clear(this: any) {
       logger.info("Closed");
 
       client.terminate();
+      opened = false;
+      clearInterval(pingInterval);
 
       await attemptConnection();
     });
@@ -63,6 +73,7 @@ async function attemptConnection() {
     i++
   ) {
     logger.info(`Attempting connection. Attempt ${i + 1}`);
+
     if (await newClient()) {
       logger.info("Successfully connected client");
       return;
