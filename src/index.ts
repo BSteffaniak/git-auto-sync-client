@@ -30,7 +30,7 @@ async function newClient() {
     let opened = false;
 
     client.on("error", function(...args) {
-      console.error.apply(this, args);
+      logger.error(JSON.stringify(args));
 
       if (!opened) resolve(false);
     });
