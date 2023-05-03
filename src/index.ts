@@ -38,9 +38,6 @@ async function newClient() {
     client.on("open", function open(this: any) {
       opened = true;
       logger.info("Connection has successfully been opened");
-      client.send(JSON.stringify({ action: "sendmessage", data: "test" }));
-
-      resolve(true);
 
       pingInterval = setInterval(() => {
         if (!opened) return clearInterval(pingInterval);
@@ -48,6 +45,8 @@ async function newClient() {
         logger.info("Sending ping");
         client.ping();
       }, 9 * 60 * 1000);
+
+      resolve(true);
     });
 
     client.on("close", async function clear(this: any) {
