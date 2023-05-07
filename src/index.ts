@@ -115,14 +115,16 @@ async function startServer(): Promise<Express> {
   });
 }
 
-console.time("startup");
+const startupTime = new Date().toISOString();
+console.time(`${startupTime} startup`);
 const [ws, server] = await Promise.all([attemptConnection(), startServer()]);
-console.timeEnd("startup");
+console.timeEnd(`${startupTime} startup`);
 
 server.post("/send", (req, res) => {
-  console.time("POST /send");
+  const sendTime = new Date().toISOString();
+  console.time(`${sendTime} POST /send`);
   const { data } = req.body;
   ws.send(JSON.stringify({ action: "sendmessage", data }));
   res.send({ success: true });
-  console.timeEnd("POST /send");
+  console.timeEnd(`${sendTime} POST /send`);
 });
