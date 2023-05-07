@@ -1,3 +1,4 @@
+import util from "util";
 import express, { Express } from "express";
 import WebSocket from "ws";
 import winston from "winston";
@@ -17,6 +18,30 @@ const logger = winston.createLogger({
     }),
   ],
 });
+
+const consoleLogger = function (
+  level: string,
+  message: string,
+  ...params: any[]
+) {
+  const formatted = util.format(message, ...params);
+
+  if (formatted !== message) {
+    logger.log(level, formatted);
+    return;
+  }
+
+  logger.log(level, message);
+
+  if (params.length > 0) {
+    logger.log(level, JSON.stringify(params));
+  }
+};
+
+console.log = (...args) => consoleLogger("info", ...args);
+console.info = (...args) => consoleLogger("info", ...args);
+console.error = (...args) => consoleLogger("error", ...args);
+console.warn = (...args) => consoleLogger("warn", ...args);
 
 const MAX_CONNECTION_RETRY_COUNT = parseInt(
   process.env.MAX_CONNECTION_RETRY_COUNT!
