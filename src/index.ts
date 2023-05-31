@@ -59,8 +59,6 @@ async function newClient(): Promise<WebSocket> {
 
     client.on("error", function (...args) {
       logger.error(JSON.stringify(args));
-
-      if (!opened) reject();
     });
 
     client.on("open", function open(this: any) {
@@ -80,11 +78,15 @@ async function newClient(): Promise<WebSocket> {
     client.on("close", async function clear(this: any) {
       logger.info("Closed");
 
-      client.terminate();
-      opened = false;
-      clearInterval(pingInterval);
+      if (opened) {
+        opened = false;
+        client.terminate();
+        clearInterval(pingInterval);
 
-      await attemptConnection();
+        await attemptConnection();
+      } else {
+        reject();
+      }
     });
 
     client.on("message", function message(data) {
